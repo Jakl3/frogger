@@ -10,7 +10,8 @@ public class FroggerGame extends JPanel implements Runnable, KeyListener {
     private List<Obstacle> vehicles;
     private List<Obstacle> turtles;
     private List<Obstacle> logs;
-    private HashMap<Integer, Boolean> keys, released;
+    private HashMap<Integer, Boolean> keys;
+    private HashMap<Integer, Boolean> released;
 
     public FroggerGame(int speed) {
         setBackground(Color.BLACK);
@@ -18,7 +19,8 @@ public class FroggerGame extends JPanel implements Runnable, KeyListener {
         keys = new HashMap<>();
         released = new HashMap<>();
 
-        frog = new Frog(200, 200, "assets/frog", 2);
+        frog = new Frog(200, 200, "assets/frog", 0.5);
+        logs = new ArrayList<>();
 //        vehicles = new Obstacle("assets/vehicles", speed);
 //        turtles = new Obstacle("assets/turtles", speed);
 //        logs = new Obstacle("assets/logs", speed);
@@ -91,6 +93,10 @@ public class FroggerGame extends JPanel implements Runnable, KeyListener {
         }
 
         frog.paint(window);
+        for (Obstacle log : logs) {
+            log.paint(window);
+        }
+
     }
 
     private boolean check(int kc) {

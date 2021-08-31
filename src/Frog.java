@@ -1,4 +1,8 @@
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 
@@ -10,12 +14,13 @@ public class Frog extends Canvas {
     private final String[] filenames;
 
     private int prevDir;
+    private int degrees;
 
     public Frog(int _x, int _y, String _path, double _scale) {
         x = _x;
         y = _y;
         scale = _scale;
-        speed = 30;
+        speed = 1;
         path = _path;
         prevDir = 0;
 
@@ -29,7 +34,9 @@ public class Frog extends Canvas {
     public void moveHoriz(int dir) {
         // dir needs to be either 1 or -1, for r or l
         x = x + (dir * speed);
-        prevDir = dir == 1 ? 2 : 1;
+        prevDir += 1;
+        prevDir %= filenames.length;
+        degrees = -1 * dir * 90;
     }
 
     public void moveVert(int dir) {
