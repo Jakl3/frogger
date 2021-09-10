@@ -2,17 +2,14 @@ import javax.swing.JFrame;
 
 public class Runner extends JFrame
 {
-	private static final int WIDTH = 800;
-	private static final int HEIGHT = 600;
+	private static final int WIDTH = 1000;
+	private static final int HEIGHT = 700;
 
 	public Runner()
 	{
 		super("Frogger");
-
 		setSize(WIDTH,HEIGHT);
-
-		getContentPane().add( new FroggerGame(5) );
-
+		getContentPane().add( new Display(WIDTH, HEIGHT) );
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		requestFocus();
