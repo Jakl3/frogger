@@ -7,12 +7,12 @@ public class DrawGrid extends Canvas {
     private int rows, cols;
     private int gridSize;
 
-    public DrawGrid(int w, int h, int r, int c, int gridSize) {
+    public DrawGrid(int w, int h, int r, int c) {
         this.width = w;
         this.height = h;
         this.rows = r;
         this.cols = c;
-        this.gridSize = gridSize;
+        this.gridSize = 50;
     }
 
     public void paint(Graphics window) {

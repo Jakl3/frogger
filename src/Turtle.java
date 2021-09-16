@@ -15,11 +15,12 @@ public class Turtle extends Canvas {
     private int degrees;
     public int pic_idx;
     private boolean pics_left;
-    private BufferedImage first_image;
     private int dir;
-    private boolean sink;
+    public boolean sink;
+    private int width, height;
+    public int speed;
 
-    public Turtle(int _x, int _y, String _path, double _scale) {
+    public Turtle(int _x, int _y, String _path, double _scale, int _dir) {
         x = _x;
         y = _y;
         scale = _scale;
@@ -29,7 +30,8 @@ public class Turtle extends Canvas {
         pic_idx = 0;
         pics_left = true;
         sink = false;
-        dir = Math.round(Math.random()) > 0.5 ? 1 : -1;
+        dir = _dir;
+
 
 
         File f = new File(_path);
@@ -38,30 +40,46 @@ public class Turtle extends Canvas {
 
         filenames = fnames;
 
-        first_image = null;
-        try {
-            first_image = ImageIO.read(new File(path + "/" + filenames[0]));
-        } catch (IOException ignored) { }
-        assert first_image != null;
+        speed = (dir * (50/filenames.length));
+
+        int max_height = -1, max_width = -1;
+
+
+        for (String fname : filenames) {
+            BufferedImage temp_img = null;
+            try {
+                temp_img = ImageIO.read(new File(path + "/" + fname));
+            } catch (IOException ignored) { }
+            assert temp_img != null;
+
+            max_height = Math.max(max_height, temp_img.getHeight());
+            max_width = Math.max(max_width, temp_img.getWidth());
+        }
+
+        scale = 50.0 / max_height;
+        width = (int)(scale * max_width);
+        height = (int)(scale * max_height);
+
+        collision =  new Rectangle(x, y, width, height);
     }
 
     public void movePos() {
-        moveHoriz(dir);
+        moveHoriz();
         collision.setLocation(x,y);
         pic_idx += 1;
-        if (pic_idx >= filenames.length*3) {
+        if (pic_idx >= filenames.length*7) {
             pics_left = false;
             pic_idx = 0;
         }
     }
 
-    public void moveHoriz(int dir) {
+    public void moveHoriz() {
         // dir needs to be either 1 or -1, for r or l
-        x = x + (dir * (62/filenames.length));
+        x = x + (dir * (50/filenames.length));
         if (dir != 0)
             degrees = dir == 1 ? 360 : 180;
-        if (x > 60*16) x = 60*16;
-        if (x < 0) x = 0;
+//        if (x > 60*16) x = 60*16;
+//        if (x < 0) x = 0;
     }
 
     private BufferedImage rotate(BufferedImage image) {
@@ -86,24 +104,27 @@ public class Turtle extends Canvas {
         // Read in the image
         BufferedImage image = null;
         try {
-            image = ImageIO.read(new File(path + "/" + filenames[pic_idx/3]));
+            image = ImageIO.read(new File(path + "/" + filenames[pic_idx/7]));
         } catch (IOException ignored) { }
         assert image != null;
 
-        if(pic_idx>=10){
+        if(pic_idx>=10*7){
+            sink = true;
+        }
+        else {
             sink = false;
         }
 
         BufferedImage new_image = rotate(image);
+        int n_width = (int)(scale * new_image.getWidth(null));
+        int n_height = (int)(scale * new_image.getHeight(null));
         // Draw the image
-        g2.drawImage(new_image, x, y, (int)(scale * new_image.getWidth(null)),
-                (int)(scale * new_image.getHeight(null)),this);
+        g2.drawImage(new_image, x, y+25-n_height/2, n_width, n_height,this);
+//        g2.drawImage(new_image, x, y, width, height,this);
 
         // Draw bounding box
-//        g2.setColor(Color.RED);
-//        BufferedImage new_first = rotate(first_image);
-//        collision.setBounds(x, y, (int)(scale * new_first.getWidth(null)),
-//                (int)(scale * new_first.getHeight(null)));
+        g2.setColor(Color.RED);
+        collision.setBounds(x, y+25-n_height/2, n_width, n_height);
 //        g2.draw(collision);
     }
 
@@ -112,4 +133,10 @@ public class Turtle extends Canvas {
         return collision;
 
     }
+    public void respawn(int _x, int _y){
+        x = _x;
+        y = _y;
+    }
+
+
 }

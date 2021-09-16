@@ -13,14 +13,11 @@ public class Car extends Canvas {
     private String path;
     private Rectangle collision;
     private BufferedImage img;
-    public String fnamea;
 
-
-    public Car(int _x, int _y, double _scale, String _path, double _speed, int _dir, int _type){
+    public Car(int _x, int _y, String _path, double _speed, int _dir, int _type){
         //type  -> -1 means touching is bad 1 means touching is good
         x = _x;
         y = _y;
-        scale = _scale;
         path = _path;
         speed = _speed;
         dir = _dir;
@@ -37,7 +34,8 @@ public class Car extends Canvas {
         } catch (IOException ignored) {
         }
         assert img != null;
-        fnamea = filenames[rand];
+
+        scale = 50.0 / img.getHeight();
 
         collision =  new Rectangle(x, y, (int)(scale * img.getWidth(null)), (int)(scale * img.getHeight(null)));
     }
@@ -73,4 +71,5 @@ public class Car extends Canvas {
     public void changeX(){
         x+=dir*speed;
     }
+    public void respawn(int _x, int _y){ x = _x; y = _y; }
 }

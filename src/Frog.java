@@ -18,6 +18,7 @@ public class Frog extends JPanel implements KeyListener {
     private Rectangle frog;
     private BufferedImage image;
     public boolean picsLeft;
+    public boolean floating;
 
     private long[] pressed; // long[0] = keycode, long[1] = time
     private final HashMap<Integer, int[]> directions;
@@ -58,6 +59,14 @@ public class Frog extends JPanel implements KeyListener {
 
     public void render(Graphics window) {
         Graphics2D g2 = (Graphics2D) window;
+//        System.out.println(floating);
+
+        if (picsLeft && pic_idx == 0 && !floating) {
+            int curr_x = (int)(Math.round(frog.x / 50.0) * 50);
+            int curr_y = (int)(Math.round(frog.y / 50.0) * 50);
+            frog.x = curr_x;
+            frog.y = curr_y;
+        }
 
         // paint frogs
         for (int key : directions.keySet()) {
@@ -76,8 +85,8 @@ public class Frog extends JPanel implements KeyListener {
 
         image = read();
         g2.drawImage(image, frog.x, frog.y, null);
-        g2.setColor(Color.RED);
-        g2.draw(frog);
+//        g2.setColor(Color.RED);
+//        g2.draw(frog);
     }
 
     public void movePos(int dirX, int dirY) {
@@ -143,7 +152,7 @@ public class Frog extends JPanel implements KeyListener {
     public Rectangle getRect() {
         return frog;
     }
-    public void move( int _x, int _y){
+    public void moveFrog( int _x, int _y){
         frog.x = _x;
         frog.y = _y;
     }
