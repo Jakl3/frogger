@@ -53,7 +53,7 @@ public class Car extends Canvas {
         g2.drawImage(img, x, y, (int)(scale * img.getWidth(null)),
                 (int)(scale * img.getHeight(null)),this);
         g2.setColor(Color.GREEN);
-        g2.draw(collision);
+        //g2.draw(collision);
         this.changeX();
 
     }

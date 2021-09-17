@@ -52,7 +52,7 @@ public class Log extends Canvas {
         g2.setColor(Color.GREEN);
 
         collision.setBounds(x, y, width, height);
-        g2.draw(collision);
+       // g2.draw(collision);
         this.changeX();
 
     }
