@@ -7,6 +7,7 @@ import java.util.List;
 import java.io.*;
 import javax.imageio.*;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Display extends JPanel implements Runnable {
 
@@ -16,8 +17,9 @@ public class Display extends JPanel implements Runnable {
     public static int WIDTH;
     public static int HEIGHT;
 
+    private final AtomicBoolean running = new AtomicBoolean(false);
+
     private boolean gameOver;
-    private boolean gameWin;
 
     private Frog frog;
     private List<Car> vehicles;
@@ -50,42 +52,39 @@ public class Display extends JPanel implements Runnable {
 
         //logs
         logs = new ArrayList<>();
-        int[] xcor = new int[]{800, 800};
+        int[] x_cor = new int[]{1000, 800};
         for (int x = 0; x < 20; x++) {
-            int ycor = (int) (Math.round(Math.random()));
-            Log l = new Log(xcor[ycor], (ycor + 1) * 100, "assets/log", 2, -1);
+            int y_cor = (int) (Math.round(Math.random()));
+            Log l = new Log(x_cor[y_cor], (y_cor + 1) * 100, "assets/log", 2, -1);
             logs.add(l);
 
             int gap = (Math.random() > 0.5 ? 150 : 250);
-//            System.out.println(xcor);
-            xcor[ycor] += l.getWidth() + gap;
+//            System.out.println(x_cor);
+            x_cor[y_cor] += l.getWidth() + gap;
         }
 
         //turtles
         turtles = new ArrayList<>();
-        xcor = new int[]{0, 0};
+        x_cor = new int[]{-200, 0};
 //        int dir = Math.round(Math.random()) > 0.5 ? 1 : -1;
         int dir = 1;
         for (int x = 0; x < numObs; x++) {
-            int ycor = (int) (Math.round(Math.random()));
-            Turtle t = new Turtle(xcor[ycor], -50 + (ycor + 1) * 100, "assets/turtle", 1, dir);
+            int y_cor = (int) (Math.round(Math.random()));
+            Turtle t = new Turtle(x_cor[y_cor], -50 + (y_cor + 1) * 100, "assets/turtle", 1, dir);
             turtles.add(t);
             int gap = (Math.random() > 0.5 ? 50 : 100);
-//            System.out.println(xcor);
-            xcor[ycor] += (t.getWidth() + gap) * dir;
+            x_cor[y_cor] += (t.width + gap) * dir;
         }
 
         //vehicles
         vehicles = new ArrayList<>();
-        xcor = new int[]{800, 800, 800, 800, 800, 800};
+        x_cor = new int[]{800, 800, 800, 800, 800, 800};
         for (int x = 0; x < 11; x++) {
-            int ycor = (int) (Math.random()*6);
-            Car v = new Car(xcor[ycor], 250 + (ycor + 1) * 50, "assets/vehicle", 4, 1, 1);
+            int y_cor = (int) (Math.random()*6);
+            Car v = new Car(x_cor[y_cor], 250 + (y_cor + 1) * 50, "assets/vehicle", 4, 1, 1);
             vehicles.add(v);
             int gap = (int) (Math.random() * 150 + 100);
-//            System.out.println(v.fnamea + " " + v.getWidth() + " " + v.getHeight());
-            xcor[ycor] -= (v.getWidth() + gap);
-//            System.out.println(xcor);
+            x_cor[y_cor] -= (v.getWidth() + gap);
         }
 
 
@@ -100,20 +99,24 @@ public class Display extends JPanel implements Runnable {
     @Override
     public void run() {
         System.out.println("Running");
-        while (true) {
+        running.set(true);
+        while (running.get()) {
             try {
                 Thread.sleep(25);
                 repaint();
             } catch (Exception e) {
                 e.printStackTrace();
-                System.exit(0);
+                Thread.currentThread().interrupt();
             }
         }
     }
 
+    public void stop() {
+        running.set(false);
+    }
+
     public void paint(Graphics window) {
         Graphics2D g2 = (Graphics2D) window;
-//        System.out.println("" + frog.x + " " + frog.y);
         window.setColor(Color.BLACK);
         window.fillRect(0, 0, WIDTH, HEIGHT);
 
@@ -121,7 +124,8 @@ public class Display extends JPanel implements Runnable {
         bg.paint(window);
 
 
-        Rectangle water = new Rectangle(0, 50, WIDTH, 200);
+        Rectangle water = new Rectangle(0, 55, WIDTH, 250-55);
+//        g2.setColor(Color.RED);
 //        g2.draw(water);
 
         //paint logs
@@ -148,25 +152,23 @@ public class Display extends JPanel implements Runnable {
 
         // paint turtles
         boolean movin = false;
-        for (int x = 0; x < turtles.size(); x++) {
-            Turtle turtle = turtles.get(x);
+        for (Turtle turtle : turtles) {
             turtle.movePos();
             turtle.paint(window);
             //System.out.println(turtle.getX());
             if (turtle.x > WIDTH) {
                 //System.out.println("PASS");
-                turtles.get(x).respawn(-(turtle.getWidth()+50), turtle.y);
+                turtle.respawn(-(turtle.getWidth() + 50), turtle.y);
             }
             if (frog.getRect().intersects(turtle.getRect()) && !turtle.sink) {
                 frog.floating = true;
-                if(!movin) {
+                if (!movin) {
                     frog.moveFrog(frog.getRect().x += turtle.speed, frog.getRect().y);
                     movin = true;
                 }
                 good = true;
-            }
-           else{
-               movin = false;
+            } else {
+                movin = false;
             }
         }
         if (!good) {
@@ -176,6 +178,7 @@ public class Display extends JPanel implements Runnable {
                 gameOver = true;
             }
         }
+//        System.out.println(turtles.get(0).pic_idx);
 
         // paint vehicles
         for (int x = 0;x<vehicles.size();x++) {
@@ -199,19 +202,27 @@ public class Display extends JPanel implements Runnable {
 
 //        System.out.println(gameOver);
 
-        if (gameOver) {
-            window.setColor(Color.BLACK);
-            window.fillRect(0, 0, WIDTH, HEIGHT);
-            window.setColor(Color.RED);
-            window.setFont(new Font("Monospaced",Font.BOLD,100));
-            window.drawString("GAME OVER!",WIDTH/5,HEIGHT/2);
-        }
-        if(frog.getY()<0){
+
+        if(frog.getY()<20){
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             window.setColor(Color.BLACK);
             window.fillRect(0, 0, WIDTH, HEIGHT);
             window.setColor(Color.GREEN);
             window.setFont(new Font("Monospaced",Font.BOLD,100));
             window.drawString("YOU WIN!",WIDTH/4,HEIGHT/2);
+            stop();
+        }
+        else if (gameOver) {
+            window.setColor(Color.BLACK);
+            window.fillRect(0, 0, WIDTH, HEIGHT);
+            window.setColor(Color.RED);
+            window.setFont(new Font("Monospaced",Font.BOLD,100));
+            window.drawString("GAME OVER!",WIDTH/5,HEIGHT/2);
+            stop();
         }
 
 

@@ -5,6 +5,8 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public class Turtle extends Canvas {
     public int x, y;
@@ -14,11 +16,12 @@ public class Turtle extends Canvas {
     private Rectangle collision;
     private int degrees;
     public int pic_idx;
-    private boolean pics_left;
     private int dir;
     public boolean sink;
-    private int width, height;
+    public int width, height;
     public int speed;
+    public int current_image;
+    public int pic_dir;
 
     public Turtle(int _x, int _y, String _path, double _scale, int _dir) {
         x = _x;
@@ -28,7 +31,6 @@ public class Turtle extends Canvas {
         collision = new Rectangle(x, y, 1, 1);
         degrees = 180;
         pic_idx = 0;
-        pics_left = true;
         sink = false;
         dir = _dir;
 
@@ -37,6 +39,15 @@ public class Turtle extends Canvas {
         File f = new File(_path);
         String[] fnames = f.list();
         assert fnames != null;
+
+        Arrays.sort(fnames, new Comparator<String>() {
+            public int compare(String o1, String o2) {
+                // Intentional: Reverse order for this demo
+                int a1 = Integer.parseInt(o1.substring(0, o1.indexOf('.')));
+                int a2 = Integer.parseInt(o2.substring(0, o2.indexOf('.')));
+                return Integer.compare(a1, a2);
+            }
+        });
 
         filenames = fnames;
 
@@ -66,11 +77,13 @@ public class Turtle extends Canvas {
     public void movePos() {
         moveHoriz();
         collision.setLocation(x,y);
-        pic_idx += 1;
-        if (pic_idx >= filenames.length*7) {
-            pics_left = false;
-            pic_idx = 0;
+        if (pic_idx >= 110) {
+            pic_dir = -1;
         }
+        if (pic_idx <= 0) {
+            pic_dir = 1;
+        }
+        pic_idx += pic_dir;
     }
 
     public void moveHoriz() {
@@ -101,14 +114,16 @@ public class Turtle extends Canvas {
     public void paint(Graphics window) {
         Graphics2D g2 = (Graphics2D) window;
 
+        current_image = Math.min((int)(pic_idx / 10.0), 10);
+
         // Read in the image
         BufferedImage image = null;
         try {
-            image = ImageIO.read(new File(path + "/" + filenames[pic_idx/7]));
+            image = ImageIO.read(new File(path + "/" + filenames[current_image]));
         } catch (IOException ignored) { }
         assert image != null;
 
-        if(pic_idx>=10*7){
+        if (current_image >= 10){
             sink = true;
         }
         else {
